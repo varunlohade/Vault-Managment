@@ -43,8 +43,17 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-
+    updateu();
     _controller = AnimationController(vsync: this);
+  }
+
+  updateu() {
+    for (int i = 9001; i <= 9016; i++) {
+      FirebaseFirestore.instance
+          .collection("Column_U")
+          .doc("U_A$i")
+          .set({"Name": "Empty", "id": "A$i", "status": "Vacent"});
+    }
   }
 
   List aplhabet = [
@@ -97,7 +106,7 @@ class _HomePageState extends State<HomePage>
             onSearch: (value) {
               print("This is search value $value");
               setState(() {
-                searchValue = value;
+                searchValue = value.toLowerCase();
                 streamQuery = FirebaseFirestore.instance
                     .collection("BookedClients")
                     .where("Name", isGreaterThanOrEqualTo: searchValue)
@@ -120,16 +129,18 @@ class _HomePageState extends State<HomePage>
                   values = value;
                 },
                 controller: controller,
-                itemCount: 26,
+                itemCount: 27,
                 itemBuilder: ((context, index) {
                   print("Index of item builder $index");
                   return Column(
                     children: [
-                      Text(
-                        "Column ${aplhabet[index - 1]}",
-                        style: TextStyle(
-                            fontSize: 25, fontWeight: FontWeight.w500),
-                      ),
+                      searchValue.isEmpty
+                          ? Text(
+                              "Column ${aplhabet[index - 1]}",
+                              style: TextStyle(
+                                  fontSize: 25, fontWeight: FontWeight.w500),
+                            )
+                          : Text("Search Result"),
                       Expanded(
                         child: StreamBuilder<QuerySnapshot>(
                             stream: searchValue.isEmpty
@@ -205,7 +216,7 @@ class _HomePageState extends State<HomePage>
                                                       color: Colors.white,
                                                       fontWeight:
                                                           FontWeight.w600),
-                                                ),
+                                                )
                                               ],
                                             ),
                                           ),
@@ -228,7 +239,7 @@ class _HomePageState extends State<HomePage>
   }
 }
 
-updatefirebaselocker(int id, var aplha) {
+updatefirebaselocker(var id, var aplha) {
   print("");
   List aplhabet = [
     'A',
@@ -258,22 +269,37 @@ updatefirebaselocker(int id, var aplha) {
     'Y',
     'Z'
   ];
-  FirebaseFirestore.instance
-      .collection("BookedClients")
-      .doc("Col${aplhabet[aplha]}$id")
-      .delete();
+  // if (aplhabet[aplha] == "U") {
+  //   FirebaseFirestore.instance
+  //       .collection("BookedClients")
+  //       .doc("Col${aplhabet[aplha]}A$id")
+  //       .delete();
 
-  FirebaseFirestore.instance
-      .collection("Column_${aplhabet[aplha]}")
-      .doc("${aplhabet[aplha]}_$id")
-      .update({
-    "Name": "Empty",
-    "status": "Vacent",
-  });
+  //   FirebaseFirestore.instance
+  //       .collection("Column_${aplhabet[aplha]}")
+  //       .doc("${aplhabet[aplha]}_A$id")
+  //       .update({
+  //     "Name": "Empty",
+  //     "status": "Vacent",
+  //   });
+  // } else {
+    FirebaseFirestore.instance
+        .collection("BookedClients")
+        .doc("Col${aplhabet[aplha]}$id")
+        .delete();
+
+    FirebaseFirestore.instance
+        .collection("Column_${aplhabet[aplha]}")
+        .doc("${aplhabet[aplha]}_$id")
+        .update({
+      "Name": "Empty",
+      "status": "Vacent",
+    });
+  // }
 }
 
 opendialog(
-    context, int id, var controller, String status, var aplha, var newName) {
+    context, var id, var controller, String status, var aplha, var newName) {
   print(newName);
   int counter = 0;
   List aplhabet = [
@@ -342,27 +368,48 @@ opendialog(
                   TextButton(
                       onPressed: () async {
                         if (counter == 0) {
-                          Navigator.pop(context);
-                          print("on pressed running");
-                          FirebaseFirestore.instance
-                              .collection("BookedClients")
-                              .doc("Col${aplhabet[aplha]}$id")
-                              .set({
-                            "Name": controller.text,
-                            "id": id,
-                            "Clno": aplhabet[aplha],
-                            "status": "Booked"
-                          });
-
-                          FirebaseFirestore.instance
-                              .collection("Column_${aplhabet[aplha]}")
-                              .doc("${aplhabet[aplha]}_$id")
-                              .update({
-                            "id": id,
-                            "status": "Booked",
-                            "Name": controller.text,
-                          });
-                        }
+                          // if (aplhabet[aplha] == "U") {
+                          //   Navigator.pop(context);
+                          //   print("on pressed running");
+                          //   FirebaseFirestore.instance
+                          //       .collection("BookedClients")
+                          //       .doc("Col${aplhabet[aplha]}A$id")
+                          //       .set({
+                          //     "Name": controller.text.toString().toLowerCase(),
+                          //     "id": id,
+                          //     "Clno": aplhabet[aplha],
+                          //     "status": "Booked"
+                          //   });
+                          //   FirebaseFirestore.instance
+                          //       .collection("Column_${aplhabet[aplha]}")
+                          //       .doc("${aplhabet[aplha]}_A$id")
+                          //       .update({
+                          //     "id": id,
+                          //     "status": "Booked",
+                          //     "Name": controller.text.toString(),
+                          //   });
+                          // } else {
+                            Navigator.pop(context);
+                            print("on pressed running");
+                            FirebaseFirestore.instance
+                                .collection("BookedClients")
+                                .doc("Col${aplhabet[aplha]}$id")
+                                .set({
+                              "Name": controller.text,
+                              "id": id,
+                              "Clno": aplhabet[aplha],
+                              "status": "Booked"
+                            });
+                            FirebaseFirestore.instance
+                                .collection("Column_${aplhabet[aplha]}")
+                                .doc("${aplhabet[aplha]}_$id")
+                                .update({
+                              "id": id,
+                              "status": "Booked",
+                              "Name": controller.text,
+                            });
+                          }
+                        // }
                       },
                       child: Text("Booked")),
                 ],
