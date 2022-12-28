@@ -1,44 +1,19 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_search_bar/easy_search_bar.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:lockerapp/layout.dart';
+import 'package:flutter/services.dart';
+import 'package:lockerapp/main.dart';
 import 'package:sizer/sizer.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class Locker extends StatefulWidget {
+  final String lockerName;
+  const Locker({super.key, required this.lockerName});
 
   @override
-  Widget build(BuildContext context) {
-    return Sizer(
-      builder: (context, orientation, deviceType) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          home: Layout(),
-        );
-      },
-    );
-  }
+  State<Locker> createState() => _LockerState();
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _LockerState extends State<Locker> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   TextEditingController namecontroller = TextEditingController();
   final controller = PageController(initialPage: 1);
@@ -51,7 +26,13 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    // updatingsize();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    // SystemChrome.setPreferredOrientations([DeviceOrientation.]);
     _controller = AnimationController(vsync: this);
   }
 
@@ -86,16 +67,18 @@ class _HomePageState extends State<HomePage>
   updatingsize() {
     print("working");
 
-    for (var j = 2145; j <= 2162; j++) {
+    for (var j = 1235; j <= 1246; j++) {
       FirebaseFirestore.instance
-          .collection("Column_Z")
-          .doc('Z_$j')
-          .update({"size": "M"});
+          .collection("Column_D")
+          .doc('D_$j')
+          .update({"size": "L"});
     }
   }
 
   @override
   void dispose() {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+
     super.dispose();
     _controller.dispose();
   }
@@ -138,14 +121,14 @@ class _HomePageState extends State<HomePage>
                   values = value;
                 },
                 controller: controller,
-                itemCount: 27,
+                itemCount: 2,
                 itemBuilder: ((context, index) {
                   print("Index of item builder $index");
                   return Column(
                     children: [
                       searchValue.isEmpty
                           ? Text(
-                              "Column ${aplhabet[index - 1]}",
+                              "Column ${widget.lockerName}",
                               style: TextStyle(
                                   fontSize: 25, fontWeight: FontWeight.w500),
                             )
@@ -154,7 +137,7 @@ class _HomePageState extends State<HomePage>
                         child: StreamBuilder<QuerySnapshot>(
                             stream: searchValue.isEmpty
                                 ? FirebaseFirestore.instance
-                                    .collection('Column_${aplhabet[index - 1]}')
+                                    .collection('Column_${widget.lockerName}')
                                     .orderBy("id", descending: false)
                                     .snapshots()
                                 : streamQuery,
@@ -177,7 +160,7 @@ class _HomePageState extends State<HomePage>
                                           print("Button Pressed");
                                           opendialog(
                                             context,
-                                            "a",
+                                            widget.lockerName,
                                             ds['id'],
                                             namecontroller,
                                             ds['status'],
@@ -260,165 +243,4 @@ class _HomePageState extends State<HomePage>
           ),
         ));
   }
-}
-
-updatefirebaselocker(var id, var aplha, var lockerName) {
-  print("");
-  List aplhabet = [
-    'A',
-    'B',
-    'C',
-    'D',
-    'E',
-    'F',
-    'G',
-    'H',
-    'I',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N',
-    'O',
-    'P',
-    'Q',
-    'R',
-    'S',
-    'T',
-    'U',
-    'V',
-    'W',
-    'X',
-    'Y',
-    'Z'
-  ];
-
-  FirebaseFirestore.instance
-      .collection("BookedClients")
-      .doc("Col${lockerName}$id")
-      .delete();
-
-  FirebaseFirestore.instance
-      .collection("Column_${lockerName}")
-      .doc("${lockerName}_$id")
-      .update({
-    "Name": "Empty",
-    "status": "Vacent",
-  });
-}
-
-opendialog(context, var lockerName, var id, var controller, String status,
-    var aplha, var newName) {
-  print(newName);
-  int counter = 0;
-  List aplhabet = [
-    'A',
-    'B',
-    'C',
-    'D',
-    'E',
-    'F',
-    'G',
-    'H',
-    'I',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N',
-    'O',
-    'P',
-    'Q',
-    'R',
-    'S',
-    'T',
-    'U',
-    'V',
-    'W',
-    'X',
-    'Y',
-    'Z'
-  ];
-  bool _switchValue = true;
-
-  status == "Booked" && counter == 0
-      ? showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                title: const Text("Change Vacancy status"),
-                content: Text("Locker belongs to: $newName"),
-                actions: [
-                  TextButton(
-                    onPressed: () async {
-                      if (counter == 0) {
-                        updatefirebaselocker(id, aplha, lockerName);
-                        counter = 1;
-                      }
-                    },
-                    child: Text("Vacent"),
-                  )
-                ],
-              ))
-      : showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                title: const Text("Change Vacancy status"),
-                actions: [
-                  Column(
-                    children: [
-                      const Text("Locker belongs to"),
-                      TextFormField(
-                        controller: controller,
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                      onPressed: () async {
-                        if (counter == 0) {
-                          // if (aplhabet[aplha] == "U") {
-                          //   Navigator.pop(context);
-                          //   print("on pressed running");
-                          //   FirebaseFirestore.instance
-                          //       .collection("BookedClients")
-                          //       .doc("Col${aplhabet[aplha]}A$id")
-                          //       .set({
-                          //     "Name": controller.text.toString().toLowerCase(),
-                          //     "id": id,
-                          //     "Clno": aplhabet[aplha],
-                          //     "status": "Booked"
-                          //   });
-                          //   FirebaseFirestore.instance
-                          //       .collection("Column_${aplhabet[aplha]}")
-                          //       .doc("${aplhabet[aplha]}_A$id")
-                          //       .update({
-                          //     "id": id,
-                          //     "status": "Booked",
-                          //     "Name": controller.text.toString(),
-                          //   });
-                          // } else {
-                          Navigator.pop(context);
-                          print("on pressed running");
-                          FirebaseFirestore.instance
-                              .collection("BookedClients")
-                              .doc("Col${lockerName}$id")
-                              .set({
-                            "Name": controller.text,
-                            "id": id,
-                            "Clno": lockerName,
-                            "status": "Booked"
-                          });
-                          FirebaseFirestore.instance
-                              .collection("Column_${lockerName}")
-                              .doc("${lockerName}_$id")
-                              .update({
-                            "id": id,
-                            "status": "Booked",
-                            "Name": controller.text,
-                          });
-                        }
-                        // }
-                      },
-                      child: Text("Booked")),
-                ],
-              ));
 }
